@@ -1,0 +1,6 @@
+requests2
+pandas
+lxml
+bs4
+selenium
+html5lib
