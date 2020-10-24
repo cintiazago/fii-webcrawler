@@ -50,6 +50,9 @@ python crawler.py
 ```
 
 ## To-Do
+
+[ ] Finishing implementing the data collector
+
 [ ] Implement logging
 
 [ ] Treat the output generated before send to the API
