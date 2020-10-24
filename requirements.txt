@@ -4,3 +4,4 @@ lxml
 bs4
 selenium
 html5lib
+python-dotenv

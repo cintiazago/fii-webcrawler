@@ -1,4 +1,8 @@
 .vscode/
+__pycache__/
 venv/
 *.pyc
 *.log
+*.env
+output.json
+
