@@ -32,9 +32,11 @@ class BotRealStateFunds():
             element = self.driver.find_element_by_xpath(f"//div[@class='dataTables_scrollBody']//table")
             html_content = element.get_attribute('outerHTML')
             print(html_content)
+            if not html_content:
+                raise exceptions.FileWithNoContentException(404, "Cant parse an empty outuput.")
             return html_content if html_content else None
-        except exceptions.FileWithNoContentException as e:
-            raise e(404, 'Output with no content')
+        except Exception:
+            traceback.print_exc()
 
     def _parse_content(self, content):
         """

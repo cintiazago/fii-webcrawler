@@ -1,6 +1,15 @@
-# fii-webcrawler
+# WIP: fii-webcrawler
 
-This project was created to consume data from the https://fiis.com.br/ website to help investors to make better decisions with their investments.
+This project was created to consume data from the https://fiis.com.br/ website to help investors to make better decisions with their investments focused on Real State Funds.
+
+## Prerequisites
+
+What things you need to install the software and how to install them
+
+* Python 3.x
+* Geckodriver
+* Firefox (you can use another browser)
+* Some Python libraries following
 
 ## Installing
 
@@ -39,3 +48,10 @@ pip install -r requirements.txt
 ```
 python crawler.py
 ```
+
+## To-Do
+[ ] Implement logging
+
+[ ] Treat the output generated before send to the API
+
+[ ] Implement the API integration
