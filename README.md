@@ -1,6 +1,6 @@
 # WIP: fii-webcrawler
 
-This project was created to consume data from the https://fiis.com.br/ website to help investors to make better decisions with their investments focused on Real State Funds.
+This project was created to consume data from the internet to help investors to make better decisions with their investments focused on Real State Funds.
 
 ## Prerequisites
 
@@ -51,7 +51,7 @@ python crawler.py
 
 ## To-Do
 
-[ ] Finishing implementing the data collector
+[x] Finishing implementing the data collector
 
 [ ] Implement logging
 

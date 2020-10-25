@@ -1,13 +1,14 @@
 import time
 import requests
 import pandas as pd
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
 import json
 import traceback
 import datetime
 import decimal
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+from unicodedata import normalize
 
 import settings
 import exceptions
@@ -23,6 +24,18 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+def clean_normalize(data):
+    """
+    Normalize unicode characters, strip trailing spaces
+    and recalculate the numerics columns.
+    """
+    if isinstance(data, str):
+        return normalize('NFKC', data).strip()
+    if isinstance(data, float):
+        return data / 100
+    else:
+        return data
+
 class BotRealStateFunds():
     def __init__(self):
         """
@@ -36,22 +49,20 @@ class BotRealStateFunds():
 
     def _get_html_content(self):
         """
-        Get the URL of the HTML returns the full content
+        Get the URL of the HTML and returns the full content
         """
         self.driver.get(self.url_to_parse)
         time.sleep(self.wait_time_in_seconds)
-        try:
-            element = self.driver.find_element_by_xpath(
-                f"//div[@class='dataTables_scrollBody']//table")
-            html_content = element.get_attribute('outerHTML')
-            print(html_content)
-            if not html_content:
-                raise exceptions.FileWithNoContentException(
-                    404,
-                    "Cant parse an empty outuput.")
-            return html_content if html_content else None
-        except Exception:
-            traceback.print_exc()
+        element = self.driver.find_element_by_xpath(
+            f"//div[@class='dataTables_scrollBody']//table")
+        html_content = element.get_attribute('outerHTML')
+        # print(html_content)
+        if not html_content or \
+            'Nenhum registro encontrado' in html_content:
+            raise exceptions.FileWithNoContentException(
+                404,
+                "Cant parse an empty output.")
+        return html_content if html_content else None
 
     def _parse_content(self, content):
         """
@@ -60,15 +71,19 @@ class BotRealStateFunds():
         if not content:
             raise exceptions.FileWithNoContentException(
                 404,
-                "Cant parse an empty outuput.")
-        soup = BeautifulSoup(content, 'html.parser')
+                "Cant parse an empty output.")
+        soup = BeautifulSoup(content, 'lxml')
         table = soup.find(name='table')
-        data_frame_full = pd.read_html(str(table))[0].head(200)
+        data_frame_full = pd.read_html(str(table))[0].head(300)
         data_frame = data_frame_full[[
-            'Ticker', 'Último Rend. (R$)', 'Último Rend. (%)']]
+            'Ticker', 'Administrador', 'Último Rend. (R$)', 'Último Rend. (%)',
+            'Cotação/VP', 'Cota base']]
         data_frame.columns = [
-            'ticker', 'ultimo_rend', 'ultimo_rend_perc']
+            'ticker', 'administrador', 'ultimo_rend', 'ultimo_rend_perc',
+            'p_vp', 'cota_base']
         self.driver.quit()
+        self.driver = None
+        data_frame = data_frame.applymap(clean_normalize)
         return json.dumps(data_frame.to_dict('records'), cls=JSONEncoder)
 
     @staticmethod
@@ -95,5 +110,10 @@ class BotRealStateFunds():
             self._export_local_file(parsed_content)
             self._send_to_api(parsed_content)
             print('Web scraping finished successfully!')
+        except exceptions.FileWithNoContentException as e:
+            print("ERROR: [%s] %s" % (e.code, e.message))
         except Exception:
             traceback.print_exc()
+        finally:
+            if self.driver:
+                self.driver.quit()
