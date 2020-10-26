@@ -58,3 +58,5 @@ python crawler.py
 [ ] Treat the output generated before send to the API
 
 [ ] Implement the API integration
+
+[ ] Turn the settings module into a Singleton

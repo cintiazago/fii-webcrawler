@@ -5,6 +5,7 @@ import json
 import traceback
 import datetime
 import decimal
+import logging
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
@@ -51,6 +52,7 @@ class BotRealStateFunds():
         """
         Get the URL of the HTML and returns the full content
         """
+        logging.info('Geting the HTML content from %s' % self.url_to_parse)
         self.driver.get(self.url_to_parse)
         time.sleep(self.wait_time_in_seconds)
         element = self.driver.find_element_by_xpath(
@@ -59,8 +61,9 @@ class BotRealStateFunds():
         # print(html_content)
         if not html_content or \
             'Nenhum registro encontrado' in html_content:
+            logging.error('Output with no valid content')
             raise exceptions.FileWithNoContentException(
-                404,
+                400,
                 "Cant parse an empty output.")
         return html_content if html_content else None
 
@@ -68,12 +71,15 @@ class BotRealStateFunds():
         """
         Parse the content to a especific dictionary and return the json
         """
+        logging.info('Parsing HTML content')
         if not content:
+            logging.error('Output with no valid content')
             raise exceptions.FileWithNoContentException(
-                404,
+                400,
                 "Cant parse an empty output.")
         soup = BeautifulSoup(content, 'lxml')
         table = soup.find(name='table')
+        logging.info('Reading HTML table with requested data')
         data_frame_full = pd.read_html(str(table))[0].head(300)
         data_frame = data_frame_full[[
             'Ticker', 'Administrador', 'Último Rend. (R$)', 'Último Rend. (%)',
@@ -81,18 +87,22 @@ class BotRealStateFunds():
         data_frame.columns = [
             'ticker', 'administrador', 'ultimo_rend', 'ultimo_rend_perc',
             'p_vp', 'cota_base']
+        logging.info('Quiting Firefox')
         self.driver.quit()
         self.driver = None
+        logging.info('Sanitizing fields')
         data_frame = data_frame.applymap(clean_normalize)
         return json.dumps(data_frame.to_dict('records'), cls=JSONEncoder)
 
     @staticmethod
     def _export_local_file(output):
         if output:
+            logging.info('Exporting JSON with the data parsed')
             with open('output.json', 'w') as f:
                 f.write(output)
         else:
-            print("No file was exported.")
+            logging.error(
+                'JSON File could not be saved because there is no content')
 
     def _send_to_api(self, data):
         """
@@ -109,10 +119,11 @@ class BotRealStateFunds():
             parsed_content = self._parse_content(content)
             self._export_local_file(parsed_content)
             self._send_to_api(parsed_content)
-            print('Web scraping finished successfully!')
+            logging.info('Web scraping finished successfully!')
         except exceptions.FileWithNoContentException as e:
-            print("ERROR: [%s] %s" % (e.code, e.message))
+            logging.error("ERROR: [%s] %s" % (e.code, e.message))
         except Exception:
+            logging.error("ERROR: [%s] %s" % (e))
             traceback.print_exc()
         finally:
             if self.driver:
