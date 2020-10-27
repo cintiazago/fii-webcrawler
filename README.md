@@ -53,10 +53,12 @@ python crawler.py
 
 [x] Finishing implementing the data collector
 
-[ ] Implement logging
+[x] Implement logging
+
+[ ] Turn the settings module into a Singleton
 
 [ ] Treat the output generated before send to the API
 
 [ ] Implement the API integration
 
-[ ] Turn the settings module into a Singleton
+[ ] Unit tests

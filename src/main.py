@@ -25,8 +25,9 @@ def config_log():
     log_dir = APP_LOG_DIR
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
+    full_filename = os.path.join(log_dir, APP_LOG_FILENAME)
     rotation_handler = logging.handlers.TimedRotatingFileHandler(
-        APP_LOG_FILENAME, when='midnight', backupCount=7)
+        full_filename, when='midnight', backupCount=7)
     rotation_handler.setFormatter(log_formatter)
     logger.addHandler(rotation_handler)
     logging.getLogger("requests").setLevel(logging.WARNING)

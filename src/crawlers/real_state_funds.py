@@ -122,7 +122,7 @@ class BotRealStateFunds():
             logging.info('Web scraping finished successfully!')
         except exceptions.FileWithNoContentException as e:
             logging.error("ERROR: [%s] %s" % (e.code, e.message))
-        except Exception:
+        except Exception as e:
             logging.error("ERROR: [%s] %s" % (e))
             traceback.print_exc()
         finally:
