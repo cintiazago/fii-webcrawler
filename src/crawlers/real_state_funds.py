@@ -1,6 +1,7 @@
 import time
 import requests
 import pandas as pd
+import pandera as pa
 import json
 import traceback
 import datetime
@@ -37,7 +38,7 @@ def clean_normalize(data):
     else:
         return data
 
-class BotRealStateFunds():
+class BotFIIsWebsite():
     def __init__(self):
         """
         Constructor
@@ -80,19 +81,46 @@ class BotRealStateFunds():
         soup = BeautifulSoup(content, 'lxml')
         table = soup.find(name='table')
         logging.info('Reading HTML table with requested data')
-        data_frame_full = pd.read_html(str(table))[0].head(300)
+
+        # Filtering the first 400 elements on table to optimize memory
+        data_frame_full = pd.read_html(str(table))[0].head(400)
+
+        logging.info('Quiting Firefox')
+        self.driver.quit()
+        self.driver = None
+
         data_frame = data_frame_full[[
             'Ticker', 'Administrador', 'Último Rend. (R$)', 'Último Rend. (%)',
             'Cotação/VP', 'Cota base']]
         data_frame.columns = [
             'ticker', 'administrador', 'ultimo_rend', 'ultimo_rend_perc',
             'p_vp', 'cota_base']
-        logging.info('Quiting Firefox')
-        self.driver.quit()
-        self.driver = None
+
+        # This step is needed to fulfill columns with NaN values
+        # The inplace parameter says that the current object will be changed
+        # within generate another copy of the original object
+        data_frame.fillna(0, inplace=True)
+
         logging.info('Sanitizing fields')
-        data_frame = data_frame.applymap(clean_normalize)
-        return json.dumps(data_frame.to_dict('records'), cls=JSONEncoder)
+        validated_data_frame = self._validate_schema(data_frame)
+        sanitized_data_frame = validated_data_frame.applymap(clean_normalize)
+
+        return json.dumps(
+            sanitized_data_frame.to_dict('records'), cls=JSONEncoder)
+
+    @staticmethod
+    def _validate_schema(data_frame):
+        logging.info('Validating Data Frame Schema')
+        schema = pa.DataFrameSchema({
+            "ticker": pa.Column(str, nullable=False, required=True),
+            "administrador": pa.Column(str),
+            "ultimo_rend": pa.Column(float, nullable=False, coerce=True),
+            "ultimo_rend_perc": pa.Column(float, nullable=True),
+            "p_vp": pa.Column(float, nullable=True),
+            "cota_base": pa.Column(float, nullable=True),
+        })
+        validated_data_frame = schema.validate(data_frame)
+        return validated_data_frame
 
     @staticmethod
     def _export_local_file(output):
@@ -121,9 +149,9 @@ class BotRealStateFunds():
             self._send_to_api(parsed_content)
             logging.info('Web scraping finished successfully!')
         except exceptions.FileWithNoContentException as e:
-            logging.error("ERROR: [%s] %s" % (e.code, e.message))
+            logging.error("[%s] %s" % (e.code, e.message))
         except Exception as e:
-            logging.error("ERROR: [%s] %s" % (e))
+            logging.error("[%s] %s" % ('500', str(e)))
             traceback.print_exc()
         finally:
             if self.driver:

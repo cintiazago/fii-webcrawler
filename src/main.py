@@ -7,8 +7,8 @@ from crawlers import real_state_funds
 
 APP_LOG_DIR = os.path.join('/'.join(
     os.path.dirname(
-        os.path.abspath(__file__)).split('/')[:-1]),
-            'logging')
+        os.path.abspath(__file__))
+            .split('/')[:-1]), 'logging')
 
 APP_LOG_FILENAME = 'main.log'
 
@@ -34,6 +34,6 @@ def config_log():
 
 if __name__ == "__main__":
     config_log()
-    logging.info('Starting application...')
-    bot = real_state_funds.BotRealStateFunds()
+    logging.info('Starting web crawler...')
+    bot = real_state_funds.BotFIIsWebsite()
     bot.start()
