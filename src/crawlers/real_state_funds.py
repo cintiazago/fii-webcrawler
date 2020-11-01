@@ -44,10 +44,10 @@ class BotFIIsWebsite():
         Constructor
         """
         self.url_to_parse = settings.URL_TO_PARSE
-        self.wait_time_in_seconds = int(settings.WAIT_TIME_IN_SECONDS)
+        self.wait_time_in_seconds = int(settings.REQUEST_WAIT_TIME_IN_SECONDS)
         self.option = Options()
-        self.option.headless = True
-        self.driver = webdriver.Firefox()
+        self.option.headless = bool(settings.WEB_DRIVER_OPTION_HEADLESS)
+        self.driver = webdriver.Firefox(options=self.option)
 
     def _get_html_content(self):
         """
@@ -66,7 +66,7 @@ class BotFIIsWebsite():
             raise exceptions.FileWithNoContentException(
                 400,
                 "Cant parse an empty output.")
-        return html_content if html_content else None
+        return html_content
 
     def _parse_content(self, content):
         """

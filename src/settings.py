@@ -6,4 +6,5 @@ env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
 URL_TO_PARSE = os.getenv("URL_TO_PARSE")
-WAIT_TIME_IN_SECONDS = os.getenv("WAIT_TIME_IN_SECONDS")
+REQUEST_WAIT_TIME_IN_SECONDS = os.getenv("REQUEST_WAIT_TIME_IN_SECONDS")
+WEB_DRIVER_OPTION_HEADLESS = os.getenv("WEB_DRIVER_OPTION_HEADLESS")
