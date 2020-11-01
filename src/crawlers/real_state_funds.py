@@ -7,10 +7,13 @@ import traceback
 import datetime
 import decimal
 import logging
+import sys, os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from unicodedata import normalize
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import settings
 import exceptions
@@ -59,13 +62,13 @@ class BotFIIsWebsite():
         element = self.driver.find_element_by_xpath(
             f"//div[@class='dataTables_scrollBody']//table")
         html_content = element.get_attribute('outerHTML')
-        # print(html_content)
         if not html_content or \
             'Nenhum registro encontrado' in html_content:
             logging.error('Output with no valid content')
             raise exceptions.FileWithNoContentException(
                 400,
                 "Cant parse an empty output.")
+        # print(html_content)
         return html_content
 
     def _parse_content(self, content):

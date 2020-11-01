@@ -7,3 +7,5 @@ html5lib
 python-dotenv
 pandera
 packaging
+pytest
+pytest-cov

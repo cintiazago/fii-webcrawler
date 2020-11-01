@@ -6,4 +6,5 @@ logging/
 *.pyc
 *.log
 *.env
+*.coverage
 output.json
