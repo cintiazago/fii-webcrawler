@@ -46,7 +46,15 @@ pip install -r requirements.txt
 ## Running the code
 
 ```
-python crawler.py
+python src/main.py
+```
+
+## Running tests
+
+```
+python -m pytest
+
+pytest --cov=src
 ```
 
 ## To-Do
