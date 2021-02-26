@@ -63,8 +63,6 @@ pytest --cov=src
 
 [x] Implement logging
 
-[ ] Turn the settings module into a Singleton
-
 [x] Treat the output generated before send to the API
 
 [ ] Implement the API integration
